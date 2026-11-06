@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main",
+  "description": "Local main window: bundled decoder fixtures and one-shot capture preview only.",
+  "windows": ["main"],
+  "permissions": ["allow-decode-fixture", "allow-capture-preview"]
+}

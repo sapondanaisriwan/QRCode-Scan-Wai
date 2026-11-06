@@ -1,0 +1,10 @@
+AGENTS.md
+docs/REQUIREMENTS.md
+package-lock.json
+node_modules
+dist
+src-tauri/target
+src-tauri/gen
+.npm-cache
+*.rs
+Cargo.lock

@@ -32,6 +32,7 @@ Each row is independently verifiable. P1 and P2 rows become release gates only w
 | FR-12 | P1 | Support region selection on any attached display, one display per scan, including displays left of or above the primary. | A drag started on a secondary display decodes its own pixels at its own scale. Crossing its edge clamps to that display. |
 | FR-13 | P2 | Auto-detect QR codes in one user-requested frame on the chosen display. | Zero matches offer manual selection. One match opens review. Multiple matches allow the user to select a result. Detection stops after that frame. |
 | FR-14 | P2 | Decode a user-selected PNG or JPEG file or a clipboard image after an explicit import action. Apply ordinary result and URL rules. | Valid imports work offline. Cancel leaves the source untouched. Missing, corrupt, unsupported or oversized input yields a recoverable message before excessive allocation. |
+| FR-15 | P0 (approved M3.5 extension) | After decoding a manually selected region, keep the frozen primary-display image and show a numbered result card associated with each readable QR. Preserve the existing main-window result list. | Two readable QR codes produce two correctly associated results, including duplicate payloads. Card/marker positions use crop offset and native overlay DPI. Cards stay within the viewport and do not overlap; dense layouts use a scrollable numbered list with matching QR markers. Full original text and validated destination remain reviewable as literal text. Escape, Close results or View in main window dismisses the frozen view, releases image buffers and restores main with the same batch. Before decoding finishes, Escape still cancels and publishes no result. No automatic URL action occurs. |
 
 ## 3. User flows and use cases
 
@@ -42,6 +43,12 @@ Each row is independently verifiable. P1 and P2 rows become release gates only w
 | Recover from a missed code | Select an empty area, read the feedback, choose Retry and select the full code including its white border. | Retry captures a fresh frame. Only the successful attempt exposes result actions. |
 | Abandon a selection | Trigger from another application, begin a drag and press Escape before releasing. | The desktop becomes interactive again. The clipboard retains its previous value. |
 | Revisit a result (P1) | Enable history, scan a code on a secondary display, open history from the main window and select the entry. | The saved text is available offline. The same validation and explicit action are required to open its URL. |
+
+### M3.5 result-review behavior
+
+This user-approved extension applies only to QR codes inside the user-selected crop. It does not enable FR-13/P2 full-frame automatic detection. The overlay transitions from selection to decoding to review; selection cannot restart over a retained old frame. Main remains the alternative list view, reached by dismissing review. Result numbers follow the decoder's spatial order and link cards to QR markers. Long text scrolls, keyboard focus reaches every card and the close/list controls, and partial-success counts remain visible. A non-overlapping numbered list is the fallback when cards cannot fit near all symbols. Errors with no readable results return to main with Retry.
+
+Keep the frozen image in memory only while selecting, decoding or reviewing. Discard it on dismissal, failure, display/session invalidation or shutdown. Display topology/DPI changes invalidate review as well as selection. Future M4 Copy/Open actions must share the same explicit-user-action and Rust URL-validation rules in both views; they are not part of M3.5.
 
 ## 4. Windows capture and overlay contract
 
@@ -69,9 +76,9 @@ The Windows clipboard and default browser are explicit destinations outside Scre
 
 | Entity | Fields and invariants | Lifetime |
 | --- | --- | --- |
-| ScanSession | Unique session ID, state, display metrics, optional selection and native frame handle. Only the current ID may commit a result. | Memory only. Release pixel buffers after processing or cancellation. |
+| ScanSession | Unique session ID, state, display metrics, optional selection and native frame handle. Only the current ID may commit a result. | Memory only. Release raw capture/crop pixels after processing; retain only the frozen review image until review dismissal, cancellation, failure or display invalidation. |
 | ScanBatch | Ordered successful ScanResult entries, unreadable and unsupported candidate counts; selected result index belongs to the UI. | Memory until dismissed, replaced or the app exits. |
-| ScanResult | Original content string and type (url, text or other). A validated launch destination exists only for eligible URLs. | Memory until dismissed, replaced or the app exits. P0 persists no results. |
+| ScanResult | Original content string, optional crop-local physical QR bounds for spatial review, and type (url, text or other). A validated launch destination exists only for eligible URLs. | Memory until dismissed, replaced or the app exits. P0 persists no results. |
 | HistoryEntry (P1) | Unique ID, scan time in UTC, content and type. Display time in local time. Revalidate content when opened. | Per Windows user, newest first. Proposed cap of 100 entries, evict oldest on insertion. Retain until eviction or user clear. |
 | Settings (P1) | Schema version, history-enabled flag and shortcut binding. Default history off. | Per-user app data. Use versioned JSON or SQLite with atomic writes. Preserve valid settings across upgrade. |
 
@@ -114,3 +121,7 @@ Run P0 Windows integration cases on installed x64 release builds on Windows 10 a
 - The MVP assumes an interactive unlocked desktop, a pointing device, a visible readable standard QR code and supported WebView2 provisioning. Record the exact minimum OS build after clean-machine validation.
 - Proposed defaults for implementation are primary-display-only P0 capture, multiple symbols per manual selection with individual review, Ctrl+Shift+Q as the initial shortcut, and a 100-entry opt-in history cap for P1. Validate shortcut availability at runtime. Confirm a bounded decoded-image size before scheduling P2 import.
 - Excluded from this plan are camera scanning, QR generation, non-QR barcode formats, continuous monitoring, cross-display stitched crops, screen recording, screenshot export, automatic Wi-Fi joining, accounts, cloud sync, remote decoding and mobile or non-Windows clients.
+
+### T10: M3.5 spatial result review
+
+Test two separated and two adjacent QR codes, duplicate payloads, dense layouts, edge positions, partial decoding, Thai/emoji/multiline/HTML-like text, reverse selections and non-100% DPI. Verify each result number matches its symbol and the main list after dismissal. Exercise Escape during decoding versus review, Close results, View in main window, repeated scans, topology changes and shutdown. Confirm no screenshot persistence, stale overlay, automatic navigation or unrequested Copy/Open. Record actual Windows/DPI coverage; compilation alone does not close this gate.

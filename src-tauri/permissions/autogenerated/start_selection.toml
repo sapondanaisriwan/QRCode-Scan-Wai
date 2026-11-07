@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-start-selection"
+description = "Enables the start_selection command without any pre-configured scope."
+commands.allow = ["start_selection"]
+
+[[permission]]
+identifier = "deny-start-selection"
+description = "Denies the start_selection command without any pre-configured scope."
+commands.deny = ["start_selection"]

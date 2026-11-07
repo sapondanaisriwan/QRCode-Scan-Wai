@@ -3,5 +3,12 @@
   "identifier": "main",
   "description": "Local main window: bundled decoder fixtures and one-shot capture preview only.",
   "windows": ["main"],
-  "permissions": ["allow-decode-fixture", "allow-capture-preview"]
+  "permissions": [
+    "allow-decode-fixture",
+    "allow-capture-preview",
+    "allow-start-selection",
+    "allow-cancel-scan",
+    "allow-copy-result",
+    "allow-open-result"
+  ]
 }

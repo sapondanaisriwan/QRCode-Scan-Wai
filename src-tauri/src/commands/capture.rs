@@ -6,9 +6,9 @@ use serde::Serialize;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 static CAPTURING: AtomicBool = AtomicBool::new(false);
-struct Permit;
+pub(super) struct Permit;
 impl Permit {
-    fn acquire() -> Result<Self, CaptureError> {
+    pub(super) fn acquire() -> Result<Self, CaptureError> {
         CAPTURING
             .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
             .map(|_| Self)
@@ -40,7 +40,7 @@ impl From<CaptureError> for CaptureFailure {
         Self { code, message }
     }
 }
-struct MainSurface(tauri::WebviewWindow);
+pub(super) struct MainSurface(pub(super) tauri::WebviewWindow);
 impl CaptureSurface for MainSurface {
     fn hide(&self) -> Result<(), CaptureError> {
         self.0.hide().map_err(|_| CaptureError::WindowFailed)?;

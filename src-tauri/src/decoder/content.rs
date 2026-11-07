@@ -50,6 +50,8 @@ pub fn classify(content: String) -> ScanResult {
         ContentType::Text
     };
     ScanResult {
+        action_id: None,
+        bounds: None,
         content,
         content_type,
         launch_destination,

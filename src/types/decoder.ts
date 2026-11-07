@@ -10,6 +10,8 @@ export type FixtureId =
   | 'binary'
   | 'invalid';
 export type ScanResult = {
+  actionId?: string;
+  bounds?: { x: number; y: number; width: number; height: number };
   content: string;
   type: 'url' | 'text';
   launchDestination: string | null;

@@ -47,6 +47,11 @@ pub enum ContentType {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ScanResult {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub action_id: Option<String>,
+    /// Axis-aligned bounds in the decoded image's physical pixels.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bounds: Option<QrBounds>,
     pub content: String,
     #[serde(rename = "type")]
     pub content_type: ContentType,
@@ -75,4 +80,12 @@ impl From<Result<DecodeBatch, DecodeError>> for DecodeResponse {
             Err(error) => Self::Error { error },
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub struct QrBounds {
+    pub x: u32,
+    pub y: u32,
+    pub width: u32,
+    pub height: u32,
 }

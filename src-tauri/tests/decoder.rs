@@ -90,7 +90,19 @@ fn duplicate_symbols_are_kept_as_separate_results() {
         img.write_to(&mut bytes, ImageFormat::Png).unwrap();
         let batch = decode_image(bytes.get_ref()).unwrap();
         assert_eq!(batch.results.len(), 2);
-        assert_eq!(batch.results[0], batch.results[1]);
+        assert_eq!(batch.results[0].content, batch.results[1].content);
+        assert_eq!(
+            batch.results[0].launch_destination,
+            batch.results[1].launch_destination
+        );
+        let first = batch.results[0].bounds.unwrap();
+        let second = batch.results[1].bounds.unwrap();
+        assert_ne!(first, second);
+        for bounds in [first, second] {
+            assert!(bounds.width > 0 && bounds.height > 0);
+            assert!(bounds.x + bounds.width <= img.width());
+            assert!(bounds.y + bounds.height <= img.height());
+        }
     }
 }
 

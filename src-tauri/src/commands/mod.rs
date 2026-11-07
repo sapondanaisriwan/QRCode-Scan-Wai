@@ -1,4 +1,5 @@
 pub mod capture;
+pub mod selection;
 use crate::{
     decoder::{
         self,
@@ -29,9 +30,14 @@ pub async fn decode_fixture(fixture: String) -> DecodeResponse {
         return Err(DecodeError::new(ErrorCode::Busy)).into();
     }
     let permit = DecodePermit;
+    let generation = crate::actions::clear();
     match tauri::async_runtime::spawn_blocking(move || {
         let _permit = permit;
-        decoder::decode_image(bytes)
+        let mut result = decoder::decode_image(bytes);
+        if let Ok(batch) = &mut result {
+            crate::actions::register(batch, None, generation);
+        }
+        result
     })
     .await
     {

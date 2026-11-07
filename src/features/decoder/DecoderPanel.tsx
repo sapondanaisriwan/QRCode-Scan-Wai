@@ -1,3 +1,4 @@
+import ResultReview from '../results/ResultReview';
 import { useRef, useState } from 'react';
 import { decodeFixture } from './api';
 import type { DecodeResponse, FixtureId } from '../../types/decoder';
@@ -54,8 +55,8 @@ export default function DecoderPanel() {
         Decoder test images
       </h2>
       <p>
-        Choose a bundled synthetic image to test local decoding. Screen scanning
-        and image import are not available yet.
+        Choose a bundled synthetic image to test local decoding. Use Scan screen
+        above for screen capture. Image import is not available.
       </p>
       <label htmlFor="fixture">Test image</label>
       <select
@@ -104,57 +105,11 @@ export default function DecoderPanel() {
         <p role="alert">{response.error.message}</p>
       )}
       {response?.status === 'success' && selected && (
-        <div className="flex flex-col gap-3">
-          {response.result.results.length > 1 && (
-            <fieldset className="flex max-h-48 flex-col gap-2 overflow-auto">
-              <legend>
-                Choose a QR code ({response.result.results.length})
-              </legend>
-              {response.result.results.map((item, index) => (
-                <label
-                  key={index}
-                  className="flex items-start gap-2 break-all rounded border p-2"
-                >
-                  <input
-                    type="radio"
-                    name="qr-result"
-                    checked={selectedIndex === index}
-                    onChange={() => setSelectedIndex(index)}
-                    aria-label={`QR code ${index + 1}`}
-                  />
-                  <span>
-                    QR {index + 1} · {item.type}: {item.content.slice(0, 100)}
-                    {item.content.length > 100 ? '…' : ''}
-                  </span>
-                </label>
-              ))}
-            </fieldset>
-          )}
-          {(response.result.unreadableCount > 0 ||
-            response.result.unsupportedCount > 0) && (
-            <p role="status">
-              Some QR codes could not be displayed:{' '}
-              {response.result.unreadableCount} unreadable,{' '}
-              {response.result.unsupportedCount} unsupported encoding.
-            </p>
-          )}
-          <p>Content type: {selected.type}</p>
-          <pre
-            aria-label="Decoded content"
-            className="max-h-48 overflow-auto whitespace-pre-wrap break-all rounded bg-slate-200 p-3 text-slate-950 dark:bg-slate-800 dark:text-slate-100"
-          >
-            {selected.content}
-          </pre>
-          {selected.launchDestination && (
-            <p className="break-all">
-              Validated destination: {selected.launchDestination}
-            </p>
-          )}
-          <p className="text-sm">
-            No link is opened. Copy and Open actions will be added in a later
-            milestone.
-          </p>
-        </div>
+        <ResultReview
+          batch={response.result}
+          selectedIndex={selectedIndex}
+          onSelect={setSelectedIndex}
+        />
       )}
     </section>
   );

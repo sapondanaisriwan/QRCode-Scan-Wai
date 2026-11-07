@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-selection-ready"
+description = "Enables the selection_ready command without any pre-configured scope."
+commands.allow = ["selection_ready"]
+
+[[permission]]
+identifier = "deny-selection-ready"
+description = "Denies the selection_ready command without any pre-configured scope."
+commands.deny = ["selection_ready"]

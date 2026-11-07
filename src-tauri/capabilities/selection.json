@@ -1,0 +1,15 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "selection",
+  "description": "Local region overlay: read its own frame and finish its own selection only.",
+  "windows": ["selection-*"],
+  "permissions": [
+    "allow-selection-image",
+    "allow-selection-ready",
+    "allow-selection-commit",
+    "allow-selection-cancel",
+    "allow-selection-review",
+    "allow-copy-result",
+    "allow-open-result"
+  ]
+}

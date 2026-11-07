@@ -1,4 +1,5 @@
 //! Memory-only capture. No IPC, decoder, filesystem access or continuous capture.
+pub mod crop;
 pub mod workflow;
 use image::RgbaImage;
 use serde::Serialize;

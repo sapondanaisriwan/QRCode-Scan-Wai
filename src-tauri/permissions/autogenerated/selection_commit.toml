@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-selection-commit"
+description = "Enables the selection_commit command without any pre-configured scope."
+commands.allow = ["selection_commit"]
+
+[[permission]]
+identifier = "deny-selection-commit"
+description = "Denies the selection_commit command without any pre-configured scope."
+commands.deny = ["selection_commit"]

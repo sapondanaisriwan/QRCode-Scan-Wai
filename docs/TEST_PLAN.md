@@ -63,3 +63,93 @@ Manual checklist (retained for regression testing; user confirmed the Phase 3.1 
 Phase 3.1 is accepted for development progression based on the user confirmation. M3 remains incomplete. No overlay, region selection, crop or screen decoder flow is claimed by these checks.
 
 Windows release build: `npm.cmd run tauri -- build --no-bundle` passed after Phase 3.1 changes; executable: `src-tauri/target/release/screenqr.exe`. The user subsequently confirmed Phase 3.1 works after manual testing. This is user-reported evidence, not an agent-observed visual check. OS build, test repetition count and DPI of this manual run were not supplied. Protected content, secure desktop, alternate DPI and Windows 10/11 compatibility remain unverified unless separately recorded.
+
+## Phase 3.2 handoff (2026-11-07, not accepted)
+
+Implementation adds Rust tests for four drag directions, clamping/zero-area/non-finite input, viewport mismatch and overlay ACL isolation. React tests cover logical geometry, reverse drag submission, Escape/zero-area behavior, Blob cleanup and retry feedback. These new tests and the Rust build have NOT been executed by the agent; the user requested that lengthy validation commands be handed off. Do not carry over Phase 3.1 pass counts as evidence for this change.
+
+Run from the repository root:
+
+```powershell
+npm.cmd run lint
+npm.cmd test
+npm.cmd run build
+cargo fmt --manifest-path src-tauri/Cargo.toml --check
+cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+cargo test --manifest-path src-tauri/Cargo.toml
+npm.cmd run tauri -- build --no-bundle
+```
+
+Then run the newly built executable and choose **Test region selection**. Confirm frozen pixels cover the primary monitor including the taskbar, with dimming outside a clear rectangle. Test all four drag directions, zero-area click, pointer leaving/re-entering the screen, Escape before/during drag, Alt+F4, repeated selection/cancellation, main-window restoration/focus and display changes during selection. Verify at a non-100% DPI when possible. Selection currently reports logical dimensions only; no crop or QR result is expected. Record each actual result before accepting 3.2. 3.3/3.4 and full M3 acceptance remain pending.
+
+## Phase 3.2 user confirmation and Phase 3.3 handoff (2026-11-07)
+
+After fixing the missing `tauri::Manager` import, the user reported testing with no issues. This closes the 3.2 development gate using user-reported evidence; it does not establish specific OS/DPI coverage or individual test counts.
+
+3.3 adds tests for four drag directions at 100/125/150/200%, negative monitor origins, fractional rounding, zero area before rounding, out-of-bounds clamping, NaN/infinite/overflow inputs, portrait and landscape marker-pixel crops, half-open edges and crop overflow. React tests check cropped preview transport and cleanup on a cancelled retry. These new tests, Clippy and release build are handed to the user and are not claimed passed.
+
+Run the validation commands in the 3.2 handoff above. In the newly built app, choose **Test region selection** and inspect the crop: it must show exactly the selected desktop content, without dimming or selection borders. Test reverse drags, all screen edges, zero-area clicks and repeated Escape/retry. Compare known pixel markers at 100% and non-100% DPI if available. Change display settings during selection and confirm recovery instead of a stale crop. Clear the preview when finished. Record actual results before closing 3.3; QR decoding remains 3.4.
+
+## Phase 3.3 confirmation and Phase 3.4 handoff (2026-11-07)
+
+The user reported testing 3.3 with no issues; this is user-reported acceptance, not evidence of every Windows/DPI configuration. Phase 3.4 remains pending.
+
+Agent checks for 3.4: formatting, TypeScript and targeted ESLint passed. Added but not executed by the agent: crop-to-decoder fixture integration (URL, Thai, emoji, multiline, literal HTML, multiple, blank, damaged and binary); exclusion of a QR outside the crop; native decoder bounds; React multiple-result selection, controlled retry, duplicate-trigger suppression and late-result rejection after cancellation. Existing M2 decoder tests exercise the shared logic. Do not assume old test counts apply.
+
+Run from repository root:
+
+```powershell
+cargo fmt --manifest-path src-tauri/Cargo.toml --check
+cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+cargo test --manifest-path src-tauri/Cargo.toml
+npm.cmd run lint
+npm.cmd test
+npm.cmd run tauri -- build --no-bundle
+```
+
+Using the new executable, verify **Scan screen -> Select -> Crop -> Decode -> Display** with QR codes in a browser and another application. Check Thai, emoji, multiline, URL and multiple-result review. Select blank space, a damaged code and a region excluding a nearby QR; confirm controlled errors/retry. Exercise Escape during selection and Cancel/Escape during decoding, then rescan and confirm no stale content appears. Include reverse drags, screen edges and non-100% scale if available. No URL should open or make a network request. Record each tested configuration and outcome before marking 3.4/M3 complete. Protected desktop, Windows-family compatibility and broader performance/privacy gates remain unverified unless explicitly recorded.
+
+## M3 confirmation and M3.5 handoff
+
+The user confirmed the 3.4 screen-decoding workflow works without issues. M3 is accepted for development progression using that user report; exact OS/DPI and per-case coverage were not provided. M3.5 is a separately approved FR-15 extension and is not yet accepted.
+
+M3.5 changes add tests for crop-offset/inverse-DPI mapping, invalid bounds, duplicate payloads with distinct positions, layout collisions/viewport bounds/dense fallback, literal card text and dismissal, and frozen-image retention/release across overlay review. Formatting, TypeScript and targeted ESLint passed. The agent has NOT run the new Rust/React tests or release build; the user requested heavier commands be handed off.
+
+Run from root:
+
+```powershell
+cargo fmt --manifest-path src-tauri/Cargo.toml --check
+cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+cargo test --manifest-path src-tauri/Cargo.toml
+npm.cmd run lint
+npm.cmd test
+npm.cmd run tauri -- build --no-bundle
+```
+
+Native T10: select two distinct QR codes in one region, then two identical codes. Verify each numbered card matches its marked symbol and the main list retains both after closing. Check adjacent/crowded and screen-edge codes, fallback list, Thai/emoji/multiline/HTML-like content, partial successes and keyboard access. Escape during decoding must publish no new result; Escape during review and both close/list buttons must dismiss the frozen image and retain the completed batch. Repeat scans/cancellation, change display settings during review, and verify fresh captures and no stranded overlay. Test at non-100% DPI if available. No Copy/Open or automatic navigation is expected. Record actual outcomes before closing M3.5 or moving to M4.
+
+## M3.5 confirmation and M4 handoff
+
+The user reported M3.5 testing without issues. M4 now adds explicit Copy/Open in main, fixture review and spatial cards. Agent checks: Rust formatting, TypeScript and targeted ESLint passed. New tests have been written but NOT executed: result/window ownership, generation expiry and late-result rejection, duplicate native permits, exact-destination revalidation, UTF-16 preservation/NUL rejection, no action on render, Copy retry, failed Open retaining Copy, duplicate clicks and switching action targets. ACL expectations now include only the two narrow action commands in main/overlay.
+
+Run from repository root:
+
+```powershell
+cargo fmt --manifest-path src-tauri/Cargo.toml --check
+cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+cargo test --manifest-path src-tauri/Cargo.toml
+npm.cmd run lint
+npm.cmd test
+npm.cmd run tauri -- build --no-bundle
+```
+
+Manual acceptance (pending):
+
+- Copy Thai, emoji, multiline/whitespace and long content from both a spatial card and the main list; paste into a text editor and compare exact text. No copy occurs before clicking.
+- Copy while the clipboard is occupied by another application if feasible; verify a controlled error and successful retry after release. Text/results must remain available.
+- Scan two different URLs, switch cards/results and check the full destination before clicking Open. Exactly the selected destination should reach the default browser, once. No browser/network request should occur from scanning/review alone.
+- Verify javascript/file/mailto/plain domains/credentials/invalid URLs remain Copy-only. Mixed-case HTTP(S) and IDN display the canonical destination. Existing Rust URL cases must pass.
+- In spatial review, verify the browser appears in front and the results remain reachable on the taskbar. Return to review and close it; test failure/retry where feasible. Escape in the browser must not dismiss background review.
+- Start another scan or fixture decode, then try an older diagnostic result: actions must be expired. Repeat cancellation/scan and ensure no wrong-target action or stale feedback.
+
+Do not close M4 until automated checks/build and these core Windows interactions are verified. Clipboard contention, browser-association failure, Windows-family compatibility, performance and configurations not actually exercised remain unverified. Windows clipboard history/sync and external-browser traffic are explicit user-action privacy boundaries documented in README.
